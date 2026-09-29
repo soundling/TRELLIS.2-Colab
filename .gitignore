@@ -1,0 +1,31 @@
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+ngrok.yml
+ngrok.yaml
+*credentials*.json
+*token*.txt
+
+# Runtime, model weights and generated assets
+.venv/
+venv/
+.test-venv/
+trellis2-service/
+hf-cache/
+jobs/
+outputs/
+*.glb
+*.safetensors
+*.pt
+*.pth
+*.log
+*.part
+
+# Python and notebook session state
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db

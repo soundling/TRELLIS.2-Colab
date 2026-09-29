@@ -1,0 +1,9 @@
+# CPU-only validation dependencies. The notebook installs its own GPU runtime.
+fastapi==0.115.12
+starlette==0.46.2
+pydantic==2.11.7
+httpx==0.28.1
+python-multipart==0.0.20
+pillow==11.3.0
+requests==2.32.4
+nbformat==5.10.4
