@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-02
+
+- Select or install CUDA 12.4 to match the pinned PyTorch cu124 wheels instead of rejecting Colab runtimes with a different default compiler.
+- Set the service's CUDA compiler, toolkit, executable and library paths explicitly; reuse an existing matching toolkit on reruns.
+- Add CPU-only regression coverage for newer/missing compilers, toolkit reuse, and failed installation.
+
 ## 2026-09-29
 
 - Initial shareable release from the maintainer's latest `trellis2_l4_ngrok_api.ipynb`.

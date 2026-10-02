@@ -2,11 +2,59 @@
 import json
 import os
 import queue
+import re
 import shlex
+import shutil
 import signal
 import subprocess
 import threading
 import time
+from pathlib import Path
+
+
+def ensure_cuda_toolkit(env, toolkit_root=Path('/usr/local/cuda-12.4')):
+    """Select CUDA 12.4 for the cu124 wheels, installing the toolkit if needed."""
+    def compiler_version(candidate):
+        if not candidate or not Path(candidate).is_file():
+            return None
+        try:
+            output = subprocess.check_output([str(candidate), '--version'],
+                                             env=env, text=True, stderr=subprocess.STDOUT)
+        except (OSError, subprocess.CalledProcessError):
+            return None
+        match = re.search(r'release (\d+\.\d+)(?:,|\s)', output)
+        return match.group(1) if match else None
+
+    pinned_nvcc = toolkit_root / 'bin/nvcc'
+    candidates = [pinned_nvcc]
+    if env.get('CUDA_HOME'):
+        candidates.append(Path(env['CUDA_HOME']) / 'bin/nvcc')
+    candidates.append(shutil.which('nvcc', path=env.get('PATH', '')))
+    nvcc = next((path for path in candidates if compiler_version(path) == '12.4'), None)
+    if nvcc is None:
+        print('Installing CUDA 12.4 toolkit for PyTorch cu124 (toolkit only).', flush=True)
+        try:
+            run(['apt-get', 'install', '-y', '--no-install-recommends',
+                 'cuda-toolkit-12-4'], env=env)
+        except subprocess.CalledProcessError as exc:
+            raise RuntimeError('Could not install cuda-toolkit-12-4 from the Colab APT repositories. '
+                               'See install.log for the package-manager error.') from exc
+        nvcc = pinned_nvcc
+        if compiler_version(nvcc) != '12.4':
+            raise RuntimeError(f'CUDA installation did not provide a working 12.4 compiler at {nvcc}. '
+                               'See install.log before continuing.')
+
+    nvcc = Path(nvcc).resolve()
+    cuda_home = nvcc.parent.parent
+    env.update(CUDA_HOME=str(cuda_home), CUDA_PATH=str(cuda_home),
+               CUDACXX=str(nvcc), CUDAToolkit_ROOT=str(cuda_home))
+    for variable, prefix in [('PATH', str(cuda_home / 'bin')),
+                             ('LD_LIBRARY_PATH', str(cuda_home / 'lib64'))]:
+        entries = [entry for entry in env.get(variable, '').split(os.pathsep)
+                   if entry and entry != prefix]
+        env[variable] = os.pathsep.join([prefix, *entries])
+    print(f'Using CUDA 12.4 compiler: {nvcc}', flush=True)
+    return cuda_home
 
 
 def run(args, cwd=None, env=None, heartbeat_seconds=20):

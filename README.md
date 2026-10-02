@@ -26,7 +26,7 @@ This notebook accepts reference images. It does not expose text-to-3D, rigging/a
 ## Quick start
 
 1. Click **Open in Colab** above and save your own copy if desired.
-2. Choose **Runtime → Change runtime type → L4 GPU**. High system RAM is recommended. This installer rejects T4 and requires a CUDA 12.x compiler plus at least 40 GiB free disk space. It creates a Python 3.11 environment without replacing the notebook kernel's packages.
+2. Choose **Runtime → Change runtime type → L4 GPU**. High system RAM is recommended. This installer rejects T4 and requires at least 40 GiB free disk space. It selects or installs the CUDA 12.4 toolkit to match the pinned PyTorch wheels, including when Colab defaults to CUDA 13. It creates a Python 3.11 environment without replacing the notebook kernel's packages.
 3. Create an [ngrok account and authtoken](https://dashboard.ngrok.com/get-started/your-authtoken).
 4. Accept the access conditions for [DINOv3 ViT-L on Hugging Face](https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m), then create a read token with access to that model.
 5. Add these values in Colab's **Secrets** panel and enable notebook access:
@@ -122,6 +122,9 @@ Every request requires `Authorization: Bearer <your key>`. The notebook validate
 The request body is limited to 16 MiB. Images must be at least 32×32 pixels and at most 20 megapixels. Active jobs cannot be deleted or cancelled; wait for completion. A full queue returns **429**, invalid input **422**, and insufficient output disk space **507**.
 
 ## Troubleshooting
+
+- **“This pinned build needs a CUDA 12.x compiler”:** upload the updated `trellis2_l4_ngrok_api.ipynb` and run sections 1–2 again, then continue in order. Older copies rejected Colab's default compiler. The updated installer reuses CUDA 12.4 if present or installs `cuda-toolkit-12-4`, then explicitly selects its compiler and libraries for the service. NVIDIA documents this as a [toolkit-only package without a driver](https://docs.nvidia.com/cuda/archive/12.4.1/cuda-installation-guide-linux/index.html#meta-packages).
+- **CUDA toolkit package installation fails:** inspect `/content/trellis2-service/install.log` for the APT error. The automatic installation uses the CUDA packages available from Colab's configured APT repositories.
 
 | Symptom | What to check |
 |---|---|
