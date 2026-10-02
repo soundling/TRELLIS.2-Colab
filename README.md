@@ -26,7 +26,7 @@ This notebook accepts reference images. It does not expose text-to-3D, rigging/a
 ## Quick start
 
 1. Click **Open in Colab** above and save your own copy if desired.
-2. Choose **Runtime → Change runtime type → L4 GPU**. High system RAM is recommended. This installer rejects T4 and requires at least 40 GiB free disk space. It selects or installs the CUDA 12.4 toolkit to match the pinned PyTorch wheels, including when Colab defaults to CUDA 13. It creates a Python 3.11 environment without replacing the notebook kernel's packages.
+2. Choose **Runtime → Change runtime type → L4 GPU**. High system RAM is recommended. This installer rejects T4 and requires at least 40 GiB free disk space. It selects or installs the CUDA 12.6 toolkit to match the pinned PyTorch wheels, including when Colab defaults to CUDA 13. It creates a Python 3.11 environment without replacing the notebook kernel's packages.
 3. Create an [ngrok account and authtoken](https://dashboard.ngrok.com/get-started/your-authtoken).
 4. Accept the access conditions for [DINOv3 ViT-L on Hugging Face](https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m), then create a read token with access to that model.
 5. Add these values in Colab's **Secrets** panel and enable notebook access:
@@ -123,7 +123,8 @@ The request body is limited to 16 MiB. Images must be at least 32×32 pixels and
 
 ## Troubleshooting
 
-- **“This pinned build needs a CUDA 12.x compiler”:** upload the updated `trellis2_l4_ngrok_api.ipynb` and run sections 1–2 again, then continue in order. Older copies rejected Colab's default compiler. The updated installer reuses CUDA 12.4 if present or installs `cuda-toolkit-12-4`, then explicitly selects its compiler and libraries for the service. NVIDIA documents this as a [toolkit-only package without a driver](https://docs.nvidia.com/cuda/archive/12.4.1/cuda-installation-guide-linux/index.html#meta-packages).
+- **“Unable to locate package cuda-toolkit-12-4”:** that package is absent from NVIDIA's Ubuntu 24.04 repository. Reopen the latest notebook from GitHub and run sections 1–2, then continue in order. It now uses CUDA 12.6 and explicitly pinned PyTorch `2.6.0+cu126` / torchvision `0.21.0+cu126` wheels in `venv-cu126`. NVIDIA's [Ubuntu 24.04 package index](https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/) includes `cuda-toolkit-12-6`, and [PyTorch lists this wheel combination](https://docs.pytorch.org/get-started/previous-versions/). Saved Colab copies do not update automatically.
+- **“This pinned build needs a CUDA 12.x compiler”:** upload the updated `trellis2_l4_ngrok_api.ipynb` and run sections 1–2 again, then continue in order. Older copies rejected Colab's default compiler. The updated installer reuses CUDA 12.6 if present or installs `cuda-toolkit-12-6`, then explicitly selects its compiler and libraries for the service. NVIDIA documents this as a [toolkit-only package without a driver](https://docs.nvidia.com/cuda/archive/12.6.3/cuda-installation-guide-linux/index.html#meta-packages).
 - **CUDA toolkit package installation fails:** inspect `/content/trellis2-service/install.log` for the APT error. The automatic installation uses the CUDA packages available from Colab's configured APT repositories.
 
 | Symptom | What to check |

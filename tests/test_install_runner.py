@@ -54,7 +54,7 @@ class CudaToolkitTests(unittest.TestCase):
                    'LD_LIBRARY_PATH': '/driver/lib64'}
             with mock.patch.object(install_runner.shutil, 'which', return_value=None), \
                  mock.patch.object(install_runner.subprocess, 'check_output',
-                                   return_value='Cuda compilation tools, release 12.4, V12.4.131'), \
+                                   return_value='Cuda compilation tools, release 12.6, V12.6.131'), \
                  mock.patch.object(install_runner, 'run') as run, \
                  contextlib.redirect_stdout(io.StringIO()):
                 install_runner.ensure_cuda_toolkit(env, toolkit)
@@ -71,10 +71,10 @@ class CudaToolkitTests(unittest.TestCase):
                              [str(toolkit / 'lib64'), '/driver/lib64'])
 
     def test_installs_matching_toolkit_when_default_is_incompatible_or_missing(self):
-        for version in ('13.0', '12.6', None):
+        for version in ('13.0', '12.8', '12.4', None):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                toolkit = root / 'cuda-12.4'
+                toolkit = root / 'cuda-12.6'
                 default_nvcc = root / 'default/bin/nvcc'
                 default_nvcc.parent.mkdir(parents=True)
                 if version:
@@ -84,13 +84,13 @@ class CudaToolkitTests(unittest.TestCase):
 
                 def install(args, **kwargs):
                     self.assertEqual(args, ['apt-get', 'install', '-y', '--no-install-recommends',
-                                            'cuda-toolkit-12-4'])
+                                            'cuda-toolkit-12-6'])
                     self.assertIs(kwargs['env'], env)
                     pinned_nvcc.parent.mkdir(parents=True)
                     pinned_nvcc.touch()
 
                 def compiler(args, **kwargs):
-                    release = '12.4' if Path(args[0]) == pinned_nvcc else version
+                    release = '12.6' if Path(args[0]) == pinned_nvcc else version
                     return f'Cuda compilation tools, release {release}, V{release}.131'
 
                 with mock.patch.object(install_runner.shutil, 'which',

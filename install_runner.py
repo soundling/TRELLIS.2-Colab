@@ -12,8 +12,8 @@ import time
 from pathlib import Path
 
 
-def ensure_cuda_toolkit(env, toolkit_root=Path('/usr/local/cuda-12.4')):
-    """Select CUDA 12.4 for the cu124 wheels, installing the toolkit if needed."""
+def ensure_cuda_toolkit(env, toolkit_root=Path('/usr/local/cuda-12.6')):
+    """Select CUDA 12.6 for the cu126 wheels, installing the toolkit if needed."""
     def compiler_version(candidate):
         if not candidate or not Path(candidate).is_file():
             return None
@@ -30,18 +30,18 @@ def ensure_cuda_toolkit(env, toolkit_root=Path('/usr/local/cuda-12.4')):
     if env.get('CUDA_HOME'):
         candidates.append(Path(env['CUDA_HOME']) / 'bin/nvcc')
     candidates.append(shutil.which('nvcc', path=env.get('PATH', '')))
-    nvcc = next((path for path in candidates if compiler_version(path) == '12.4'), None)
+    nvcc = next((path for path in candidates if compiler_version(path) == '12.6'), None)
     if nvcc is None:
-        print('Installing CUDA 12.4 toolkit for PyTorch cu124 (toolkit only).', flush=True)
+        print('Installing CUDA 12.6 toolkit for PyTorch cu126 (toolkit only).', flush=True)
         try:
             run(['apt-get', 'install', '-y', '--no-install-recommends',
-                 'cuda-toolkit-12-4'], env=env)
+                 'cuda-toolkit-12-6'], env=env)
         except subprocess.CalledProcessError as exc:
-            raise RuntimeError('Could not install cuda-toolkit-12-4 from the Colab APT repositories. '
+            raise RuntimeError('Could not install cuda-toolkit-12-6 from the Colab APT repositories. '
                                'See install.log for the package-manager error.') from exc
         nvcc = pinned_nvcc
-        if compiler_version(nvcc) != '12.4':
-            raise RuntimeError(f'CUDA installation did not provide a working 12.4 compiler at {nvcc}. '
+        if compiler_version(nvcc) != '12.6':
+            raise RuntimeError(f'CUDA installation did not provide a working 12.6 compiler at {nvcc}. '
                                'See install.log before continuing.')
 
     nvcc = Path(nvcc).resolve()
@@ -53,7 +53,7 @@ def ensure_cuda_toolkit(env, toolkit_root=Path('/usr/local/cuda-12.4')):
         entries = [entry for entry in env.get(variable, '').split(os.pathsep)
                    if entry and entry != prefix]
         env[variable] = os.pathsep.join([prefix, *entries])
-    print(f'Using CUDA 12.4 compiler: {nvcc}', flush=True)
+    print(f'Using CUDA 12.6 compiler: {nvcc}', flush=True)
     return cuda_home
 
 
